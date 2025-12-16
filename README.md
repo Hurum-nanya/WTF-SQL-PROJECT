@@ -6,50 +6,147 @@ This project analyzes **operational, clinical, and financial** data for a health
 
 The goal is to extract meaningful insights related to patient care, doctor performance, billing, insurance coverage, and medical trends.
 
-This project was completed as part of the **Digital SkillUp Africa (DSA)** Data Analytics training. The analysis focuses on historical sales data from **Kultra Mega Stores (KMS)** — a retail and corporate office supply chain based in Lagos, Nigeria — with operations across various regions from **2009 to 2012**.
+## 🎯 Objectives
 
-KMS management tasked us with deriving **actionable insights** to improve business performance using **structured data analysis** and **SQL queries**. The goal was to understand:
+- Design a relational healthcare database
+- Analyze patient appointments and outcomes
+- Evaluate doctor performance and clinic efficiency
+- Assess billing and insurance coverage trends
+- Identify medical diagnosis patterns
+- Prepare data for visualization in Power BI
 
-- How different regions, customer segments, and products performed
-- Where the company is losing money through shipping or underperforming customers
-- What decisions can improve profitability and customer retention
-
-As the **Data Analyst**, I led the end-to-end process:
-- Data ingestion using SQL Server Management Studio
-- Data cleaning, transformation, and type optimization
-- Formulation of real business questions
-- Writing SQL queries to extract insights
-- Summarizing recommendations to support strategic decision-making
-
-🛠 **Tools Used:**
-- SQL Server Management Studio (SSMS)
-- Flat File Import Wizard
-- Microsoft Excel (for initial data prep)
-- GitHub (for version control and documentation)
-
-📈 **Business Outcomes:**
-- Identified top- and bottom-performing customer segments and products
-- Diagnosed costly shipping patterns and misaligned logistics
-- Proposed recommendations for marketing, logistics, and operations teams
+🛠️ **Tools & Technologies**
+- SQL (PostgreSQL syntax)
+- Power BI (for dashboard visualization)
+- Git & GitHub (for version control and documnetation)
 
 ---
 ## 📥 Data Importation Process
 
-- **Source:** CSV file containing order data from 2009–2012.
-- **Tool:** SQL Server Management Studio (SSMS) Flat File Import Wizard.
+- **Source:** CSV files containing health care records
+- **Tool:** Postgresql
 - **Steps:**
-  1. Imported the dataset using the SSMS Flat File Import Wizard.
-  2. Changed column data types to optimize performance and ensure data consistency:
-     - `Sales`, `Profit`, `Discount`, `Shipping_Cost` → `DECIMAL(10,2)`
-     - `Quantity`, `Order_ID`, `Product Count` → `INT`
-  3. Cleaned column names and removed blank rows.
-  4. Verified the import success through sampling and quick queries.
+  1. A PostgreSQL database was created for the health clinic project
+  2. Tables were created using CREATE TABLE
+  3. Data was imported from CSV files
+  4. Checked for consistency and converted to appropriate datatype
 
-📸 *Screenshots of the import process and outputs are available in the `/images` folder.*
+ 
+## 🗂️ Database Schema
+The database consists of 6 core tables:
+
+**1. patients**
+Stores demographic and insurance information about patients.
+
+| Column             | Description               |
+| ------------------ | ------------------------- |
+| patient_id         | Unique patient identifier |
+| first_name         | Patient first name        |
+| last_name          | Patient last name         |
+| gender             | Patient gender            |
+| date_of_birth      | Date of birth             |
+| city               | Patient city              |
+| insurance_provider | Insurance provider        |
+
+**2. appointments**
+Tracks patient visits to doctors.
+
+| Column           | Description                     |
+| ---------------- | ------------------------------- |
+| appointment_id   | Unique appointment ID           |
+| patient_id       | Linked patient                  |
+| doctor_id        | Attending doctor                |
+| appointment_date | Visit date                      |
+| status           | Completed / No-show / Cancelled |
+| visit_reason     | Reason for visit                |
+
+
+**3. doctor**
+Contains doctor and clinic information.
+
+| Column          | Description       |
+| --------------- | ----------------- |
+| doctor_id       | Doctor ID         |
+| doctor_name     | Doctor name       |
+| specialty       | Medical specialty |
+| clinic_location | Clinic branch     |
+
+**4. diagnosis**
+Medical diagnoses assigned during appointments.
+
+| Column                | Description           |
+| --------------------- | --------------------- |
+| diagnosis_id          | Diagnosis record      |
+| appointment_id        | Linked appointment    |
+| diagnosis_code        | ICD-10 diagnosis code |
+| diagnosis_description | Diagnosis details     |
+
+**5. medications**
+Medication prescriptions per patient.
+
+| Column          | Description       |
+| --------------- | ----------------- |
+| med_id          | Medication ID     |
+| patient_id      | Patient           |
+| medication_name | Drug name         |
+| dosage          | Dosage prescribed |
+| start_date      | Start date        |
+| end_date        | End date          |
+
+**6. billing**
+Financial transactions related to appointments.
+
+| Column            | Description              |
+| ----------------- | ------------------------ |
+| bill_id           | Billing ID               |
+| appointment_id    | Linked appointment       |
+| amount            | Total bill               |
+| insurance_covered | Amount paid by insurance |
+| patient_paid      | Out-of-pocket payment    |
+
+
+📈 **Business Outcomes:**
+- Supports performance evaluation
+- Helps in bonus, incentive, or promotion decisions
+- Assists in resource allocation and clinic scheduling
+- Highlights doctors contributing most to clinic profitability
 
 ---
 
 ## 🔍 Business Questions & SQL Solutions
+
+
+
+
+
+
+
+.
+
+🚀 Key SQL Concepts Demonstrated
+
+- Inner joins
+- Aggregate functions
+- CTEs (WITH clauses)
+- Window functions
+- Date & time analysis
+- Conditional logic (CASE)
+- Subqueries
+- Real-world healthcare analytics
+
+👤 Author
+
+Name: Chihurumnanya Chikaosoro Ikevude
+Role: Data Analyst
+Skills: SQL | Power BI | Data Analysis
+🔗 **LinkedIn:** [linkedin.com/in/YOUR-LINKEDIN-USERNAME](https://www.linkedin.com/in/chihurumnanyaikevude/)
+
+
+
+
+
+
+
 
 ### 1️⃣ Which product category had the highest number of entries?
 
@@ -239,5 +336,6 @@ No, KMS did **not** appropriately align shipping cost with priority.
 - Real-world BI Question Solving  
 - Shipping Strategy Evaluation  
 - Customer Value & Profitability Analysis  
+
 
 
