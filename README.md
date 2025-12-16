@@ -115,9 +115,7 @@ Financial transactions related to appointments.
 
 ## 🔍 Business Questions & SQL Solutions
 
-
-- 1. List all patients who live in Seattle.
-  
+**1. List all patients who live in Seattle.**  
 ```sql
 SELECT patient_id, first_name, last_name, city
 FROM patients
@@ -125,25 +123,24 @@ WHERE city = 'Seattle'
 ORDER BY patient_id
 ```
 
--- 2. Find all medications where the dosage is greater than 50mg.
+**2. Find all medications where the dosage is greater than 50mg.**
 ```sql
-
 SELECT medication_name, dosage
 FROM medications
 WHERE dosage > '50mg'
 ORDER BY dosage;
 ```
 
--- 3. Get all completed appointments in February 2024.
+**3. Get all completed appointments in February 2024.**
 ```sql
 
 SELECT *
 FROM appointments
 WHERE status = 'Completed' AND EXTRACT(MONTH FROM appointment_date) = 2 AND EXTRACT(YEAR FROM appointment_date) = 2024;
 ```
--- 4. Show each doctor and how many appointments they completed.
-```sql
 
+**4. Show each doctor and how many appointments they completed.**
+```sql
 SELECT d.doctor_name, d.doctor_id, a.status, COUNT(a.appointment_id) AS NO_of_comp_appoint
 FROM doctor AS d
 JOIN appointments AS a
@@ -153,7 +150,7 @@ GROUP BY d.doctor_id, d.doctor_name, a.status
 ORDER BY NO_of_comp_appoint;
 ```
 
--- 5. Find the most common diagnosis in the database.
+**5. Find the most common diagnosis in the database.**
 ```sql
 
 SELECT diagnosis_code, COUNT(diagnosis_code) AS No_of_diagnosis
@@ -162,7 +159,8 @@ GROUP BY diagnosis_code
 ORDER BY No_of_diagnosis DESC
 LIMIT 1;
 ```
--- 6. List the total billing amount per patient.
+
+**6. List the total billing amount per patient.**
 ```sql
 
 SELECT p.patient_id, p.first_name, p.last_name, SUM(b.amount) AS Total_amount
@@ -173,9 +171,8 @@ GROUP BY p.patient_id, p.first_name, p.last_name
 ORDER BY Total_amount DESC;
 ```
 
--- 7. Which clinic location has the highest number of appointments?
+**7. Which clinic location has the highest number of appointments?**
 ```sql
-
 SELECT d.clinic_location, Count(appointment_id) AS total_appointment
 FROM doctor AS d
 JOIN appointments AS a 
@@ -184,7 +181,8 @@ GROUP BY d.clinic_location
 ORDER BY total_appointment DESC
 LIMIT 1;
 ```
--- 8. Identify patients who have more than one diagnosis in 2024.
+
+**8. Identify patients who have more than one diagnosis in 2024**
 ```sql
 
 SELECT p.patient_id, p.first_name, p.last_name, MAX(a.appointment_date), Count(DISTINCT dia.diagnosis_code) AS No_of_diagonosis
@@ -199,7 +197,7 @@ HAVING Count(DISTINCT dia.diagnosis_code) > 1
 ORDER BY No_of_diagonosis DESC;
 ```
 
--- 9. Rank doctors by total revenue generated.
+**9. Rank doctors by total revenue generated**
 ```sql
 
 SELECT d.doctor_id, d.doctor_name, d.specialty, SUM(b.amount) AS total_revenue,
@@ -210,7 +208,7 @@ JOIN billing as b ON b.appointment_id = a.appointment_id
 GROUP BY d.doctor_id, d.doctor_name, d.specialty
 ```
 
--- 10. For each patient, show their most recent appointment.
+**10. For each patient, show their most recent appointment**
 ```sql
 
 SELECT p.patient_id, p.first_name, p.last_name, MAX(appointment_date) AS recent_appointment
@@ -219,7 +217,8 @@ JOIN appointments AS a ON p.patient_id = a.patient_id
 GROUP BY p.patient_id, p.first_name, p.last_name
 ORDER BY recent_appointment DESC
 ```
--- 11. Identify patients whose insurance covered less than 70% of their bill.
+
+**11. Identify patients whose insurance covered less than 70% of their bill**
 ```sql
 
 SELECT p.patient_id, p.first_name, p.last_name, b.insurance_covered, ROUND((b.insurance_covered::numeric/b.amount)*100,2) AS percentage_of_insurance
@@ -230,7 +229,7 @@ WHERE (b.insurance_covered::numeric/b.amount)*100 < 70
 ORDER BY percentage_of_insurance DESC;
 ```
 
--- 12. Identify all diabetic patients and list their last medication renewal date.
+**12. Identify all diabetic patients and list their last medication renewal date**
 ```sql
 
 SELECT p.patient_id, p.first_name, p.last_name, MAX(m.end_date) AS end_date, dia.diagnosis_code
@@ -242,7 +241,7 @@ WHERE dia.diagnosis_code = 'E11'
 GROUP BY p.patient_id, p.first_name, p.last_name, dia.diagnosis_code
 ```
 
--- 13. Which doctor has the lowest no‑show rate?
+**13. Which doctor has the lowest no‑show rate?**
 ```sql
 
 WITH NO_OF_NO_SHOWS AS (
@@ -263,7 +262,7 @@ FROM NO_OF_NO_SHOWS nns
 JOIN DOCTOR_APPOINTMENTS da ON nns.doctor_id = da.doctor_id
 ```
 
--- 14. Which age group has the highest incidence of hypertension (I10)?
+**14. Which age group has the highest incidence of hypertension (I10)?**
 ```sql
 
 WITH PATIENTS_AGE AS (
@@ -291,7 +290,7 @@ ORDER BY NO_OF_PATIENTS DESC
 LIMIT 1
 ```
 
--- 15. Which insurance provider covers the highest average amount?
+**15. Which insurance provider covers the highest average amount?**
 ```sql
 
 SELECT P.INSURANCE_PROVIDER, ROUND(AVG(B.INSURANCE_COVERED),2) AS AVG_AMOUNT_COVERED
@@ -303,7 +302,7 @@ ORDER BY AVG_AMOUNT_COVERED DESC
 LIMIT 5
 ```
 
--- 16. Determine peak days of the week for appointments.
+**16. Determine peak days of the week for appointments**
 ```sql
 
 SELECT TO_CHAR(APPOINTMENT_DATE,'Day') AS DAY_OF_WEEK, COUNT(APPOINTMENT_ID) AS NO_OF_APPOINTMENTS
@@ -313,7 +312,7 @@ ORDER BY NO_OF_APPOINTMENTS DESC
 LIMIT 1
 ```
 
--- 17 List patients whose total billing amount exceeds the average billing amount
+**17 List patients whose total billing amount exceeds the average billing amount**
 ```sql
 
 SELECT P.PATIENT_ID, P.FIRST_NAME, P.LAST_NAME, SUM(B.AMOUNT) AS TOTAL_BILLED
@@ -333,7 +332,7 @@ GROUP BY PATIENT_ID, P.FIRST_NAME, P.LAST_NAME
 ORDER BY TOTAL_BILLED DESC
 ```
 
-** 18 Top diagnosis per clinic location**
+**18 Top diagnosis per clinic location**
 ```sql
 WITH CLINIC_DIAGNOSIS_RANK AS (
 SELECT DOC.CLINIC_LOCATION, D.DIAGNOSIS_CODE, COUNT(A.APPOINTMENT_ID) NO_OF_APPOINTMENTS,
@@ -348,7 +347,7 @@ FROM CLINIC_DIAGNOSIS_RANK
 WHERE RANK_APPOINTMENTS = 1
 ```
 
-##🚀 Key SQL Concepts Demonstrated
+## 🚀 Key SQL Concepts Demonstrated
 
 - Inner joins
 - Aggregate functions
@@ -361,6 +360,10 @@ WHERE RANK_APPOINTMENTS = 1
 
 ## 👤 Author
 **Name: Chihurumnanya Chikaosoro Ikevude**
+
 Role: Data Analyst
+
 Skills: SQL | Power BI | Data Analysis
+
 🔗 **LinkedIn:** [Hurumnanya Ikevude](https://www.linkedin.com/in/chihurumnanyaikevude/)
+
