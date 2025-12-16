@@ -139,7 +139,7 @@ Financial transactions related to appointments.
 Name: Chihurumnanya Chikaosoro Ikevude
 Role: Data Analyst
 Skills: SQL | Power BI | Data Analysis
-🔗 **LinkedIn:** [linkedin.com/in/YOUR-LINKEDIN-USERNAME](https://www.linkedin.com/in/chihurumnanyaikevude/)
+🔗 **LinkedIn:** [Hurumnanya Ikevude](https://www.linkedin.com/in/chihurumnanyaikevude/)
 
 
 
@@ -336,6 +336,7 @@ No, KMS did **not** appropriately align shipping cost with priority.
 - Real-world BI Question Solving  
 - Shipping Strategy Evaluation  
 - Customer Value & Profitability Analysis  
+
 
 
 
