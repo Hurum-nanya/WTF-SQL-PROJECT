@@ -116,14 +116,239 @@ Financial transactions related to appointments.
 ## 🔍 Business Questions & SQL Solutions
 
 
+- 1. List all patients who live in Seattle.
+  
+```sql
+SELECT patient_id, first_name, last_name, city
+FROM patients
+WHERE city = 'Seattle'
+ORDER BY patient_id
+```
 
+-- 2. Find all medications where the dosage is greater than 50mg.
+```sql
 
+SELECT medication_name, dosage
+FROM medications
+WHERE dosage > '50mg'
+ORDER BY dosage;
+```
 
+-- 3. Get all completed appointments in February 2024.
+```sql
 
+SELECT *
+FROM appointments
+WHERE status = 'Completed' AND EXTRACT(MONTH FROM appointment_date) = 2 AND EXTRACT(YEAR FROM appointment_date) = 2024;
+```
+-- 4. Show each doctor and how many appointments they completed.
+```sql
 
-.
+SELECT d.doctor_name, d.doctor_id, a.status, COUNT(a.appointment_id) AS NO_of_comp_appoint
+FROM doctor AS d
+JOIN appointments AS a
+ON d.doctor_id = a.doctor_id
+WHERE status = 'Completed'
+GROUP BY d.doctor_id, d.doctor_name, a.status
+ORDER BY NO_of_comp_appoint;
+```
 
-🚀 Key SQL Concepts Demonstrated
+-- 5. Find the most common diagnosis in the database.
+```sql
+
+SELECT diagnosis_code, COUNT(diagnosis_code) AS No_of_diagnosis
+FROM diagnosis
+GROUP BY diagnosis_code
+ORDER BY No_of_diagnosis DESC
+LIMIT 1;
+```
+-- 6. List the total billing amount per patient.
+```sql
+
+SELECT p.patient_id, p.first_name, p.last_name, SUM(b.amount) AS Total_amount
+FROM patients AS p
+JOIN appointments AS a ON p.patient_id = a.patient_id
+JOIN billing AS b ON b.appointment_id = a.appointment_id
+GROUP BY p.patient_id, p.first_name, p.last_name
+ORDER BY Total_amount DESC;
+```
+
+-- 7. Which clinic location has the highest number of appointments?
+```sql
+
+SELECT d.clinic_location, Count(appointment_id) AS total_appointment
+FROM doctor AS d
+JOIN appointments AS a 
+ON d.doctor_id = a.doctor_id
+GROUP BY d.clinic_location
+ORDER BY total_appointment DESC
+LIMIT 1;
+```
+-- 8. Identify patients who have more than one diagnosis in 2024.
+```sql
+
+SELECT p.patient_id, p.first_name, p.last_name, MAX(a.appointment_date), Count(DISTINCT dia.diagnosis_code) AS No_of_diagonosis
+FROM diagnosis AS dia
+JOIN appointments AS a 
+ON a.appointment_id = dia.appointment_id
+JOIN patients AS p 
+ON p.patient_id = a.patient_id
+WHERE EXTRACT(YEAR FROM appointment_date) = 2024
+GROUP BY p.patient_id, p.first_name, p.last_name
+HAVING Count(DISTINCT dia.diagnosis_code) > 1 
+ORDER BY No_of_diagonosis DESC;
+```
+
+-- 9. Rank doctors by total revenue generated.
+```sql
+
+SELECT d.doctor_id, d.doctor_name, d.specialty, SUM(b.amount) AS total_revenue,
+RANK() OVER(ORDER BY SUM(b.amount) DESC) revenue_rank
+FROM doctor AS d
+JOIN appointments AS a ON  d.doctor_id = a.doctor_id
+JOIN billing as b ON b.appointment_id = a.appointment_id
+GROUP BY d.doctor_id, d.doctor_name, d.specialty
+```
+
+-- 10. For each patient, show their most recent appointment.
+```sql
+
+SELECT p.patient_id, p.first_name, p.last_name, MAX(appointment_date) AS recent_appointment
+FROM patients AS p
+JOIN appointments AS a ON p.patient_id = a.patient_id
+GROUP BY p.patient_id, p.first_name, p.last_name
+ORDER BY recent_appointment DESC
+```
+-- 11. Identify patients whose insurance covered less than 70% of their bill.
+```sql
+
+SELECT p.patient_id, p.first_name, p.last_name, b.insurance_covered, ROUND((b.insurance_covered::numeric/b.amount)*100,2) AS percentage_of_insurance
+FROM patients p
+JOIN appointments a ON p.patient_id = a.patient_id
+JOIN billing b ON b.bill_id = a.appointment_id 
+WHERE (b.insurance_covered::numeric/b.amount)*100 < 70
+ORDER BY percentage_of_insurance DESC;
+```
+
+-- 12. Identify all diabetic patients and list their last medication renewal date.
+```sql
+
+SELECT p.patient_id, p.first_name, p.last_name, MAX(m.end_date) AS end_date, dia.diagnosis_code
+FROM patients p
+JOIN appointments a ON a.patient_id = p.patient_id
+JOIN diagnosis dia ON dia.appointment_id = a.appointment_id
+JOIN medications m ON m.patient_id = p.patient_id
+WHERE dia.diagnosis_code = 'E11'
+GROUP BY p.patient_id, p.first_name, p.last_name, dia.diagnosis_code
+```
+
+-- 13. Which doctor has the lowest no‑show rate?
+```sql
+
+WITH NO_OF_NO_SHOWS AS (
+SELECT d.doctor_id, d.doctor_name, a.status, COUNT(a.status) AS total_no_shows
+FROM appointments a
+JOIN doctor d ON d.doctor_id = a.doctor_id
+WHERE a.status = 'No-show'
+GROUP BY d.doctor_id, d.doctor_name, a.status
+), 
+DOCTOR_APPOINTMENTS AS (
+SELECT d.doctor_id, d.doctor_name, COUNT(a.appointment_id) AS total_appointment
+FROM doctor d
+JOIN appointments a ON a.doctor_id = d.doctor_id
+GROUP BY  d.doctor_id, d.doctor_name
+)
+SELECT nns.doctor_id, nns.doctor_name, nns.status, (nns.total_no_shows * 100)/da.total_appointment AS percentage_of_no_shows
+FROM NO_OF_NO_SHOWS nns
+JOIN DOCTOR_APPOINTMENTS da ON nns.doctor_id = da.doctor_id
+```
+
+-- 14. Which age group has the highest incidence of hypertension (I10)?
+```sql
+
+WITH PATIENTS_AGE AS (
+	SELECT *, EXTRACT(YEAR FROM AGE(CURRENT_DATE, DATE_OF_BIRTH)) AS AGE_YEARS
+	FROM PATIENTS 
+),
+PATIENT_AGE_GROUP AS (
+	SELECT *,
+	CASE 
+	WHEN AGE_YEARS < 18 THEN '0-17'
+	WHEN AGE_YEARS BETWEEN 18 AND 34 THEN '18-34'
+	WHEN AGE_YEARS BETWEEN 35 AND 49 THEN '35-49'
+	WHEN AGE_YEARS BETWEEN 50 AND 64 THEN '50-64'
+	ELSE '65+'
+	END AS AGE_GROUP
+	FROM PATIENTS_AGE
+)
+SELECT PG.AGE_GROUP, COUNT(A.PATIENT_ID) AS NO_OF_PATIENTS
+FROM PATIENT_AGE_GROUP PG
+JOIN APPOINTMENTS A ON A.PATIENT_ID = PG.PATIENT_ID
+JOIN DIAGNOSIS D ON D.APPOINTMENT_ID = A.APPOINTMENT_ID
+WHERE D.DIAGNOSIS_CODE = 'I10'
+GROUP BY PG.AGE_GROUP
+ORDER BY NO_OF_PATIENTS DESC
+LIMIT 1
+```
+
+-- 15. Which insurance provider covers the highest average amount?
+```sql
+
+SELECT P.INSURANCE_PROVIDER, ROUND(AVG(B.INSURANCE_COVERED),2) AS AVG_AMOUNT_COVERED
+FROM PATIENTS P
+JOIN APPOINTMENTS A ON A.PATIENT_ID = P.PATIENT_ID
+JOIN BILLING B ON B.APPOINTMENT_ID = A.APPOINTMENT_ID
+GROUP BY P.INSURANCE_PROVIDER
+ORDER BY AVG_AMOUNT_COVERED DESC
+LIMIT 5
+```
+
+-- 16. Determine peak days of the week for appointments.
+```sql
+
+SELECT TO_CHAR(APPOINTMENT_DATE,'Day') AS DAY_OF_WEEK, COUNT(APPOINTMENT_ID) AS NO_OF_APPOINTMENTS
+FROM APPOINTMENTS
+GROUP BY DAY_OF_WEEK
+ORDER BY NO_OF_APPOINTMENTS DESC
+LIMIT 1
+```
+
+-- 17 List patients whose total billing amount exceeds the average billing amount
+```sql
+
+SELECT P.PATIENT_ID, P.FIRST_NAME, P.LAST_NAME, SUM(B.AMOUNT) AS TOTAL_BILLED
+FROM PATIENTS P
+JOIN APPOINTMENTS A ON A.PATIENT_ID = P.PATIENT_ID
+JOIN BILLING B ON B.APPOINTMENT_ID = A.PATIENT_ID
+GROUP BY P.PATIENT_ID, P.FIRST_NAME, P.LAST_NAME
+HAVING SUM(B.AMOUNT) > (
+SELECT AVG(TOTAL_AMOUNT)
+FROM (
+SELECT SUM(AMOUNT) AS TOTAL_AMOUNT
+FROM BILLING B
+JOIN APPOINTMENTS A ON A.APPOINTMENT_ID = B.APPOINTMENT_ID
+GROUP BY PATIENT_ID, P.FIRST_NAME, P.LAST_NAME
+)
+)
+ORDER BY TOTAL_BILLED DESC
+```
+
+** 18 Top diagnosis per clinic location**
+```sql
+WITH CLINIC_DIAGNOSIS_RANK AS (
+SELECT DOC.CLINIC_LOCATION, D.DIAGNOSIS_CODE, COUNT(A.APPOINTMENT_ID) NO_OF_APPOINTMENTS,
+RANK() OVER(PARTITION BY DOC.CLINIC_LOCATION ORDER BY COUNT(A.APPOINTMENT_ID) DESC) AS RANK_APPOINTMENTS
+FROM DOCTOR DOC
+JOIN APPOINTMENTS A ON A.DOCTOR_ID = DOC.DOCTOR_ID
+JOIN DIAGNOSIS D ON D.APPOINTMENT_ID = A.APPOINTMENT_ID
+GROUP BY DOC.CLINIC_LOCATION, D.DIAGNOSIS_CODE
+)
+SELECT CLINIC_LOCATION, DIAGNOSIS_CODE, NO_OF_APPOINTMENTS
+FROM CLINIC_DIAGNOSIS_RANK
+WHERE RANK_APPOINTMENTS = 1
+```
+
+##🚀 Key SQL Concepts Demonstrated
 
 - Inner joins
 - Aggregate functions
@@ -134,209 +359,8 @@ Financial transactions related to appointments.
 - Subqueries
 - Real-world healthcare analytics
 
-👤 Author
-
-Name: Chihurumnanya Chikaosoro Ikevude
+## 👤 Author
+**Name: Chihurumnanya Chikaosoro Ikevude**
 Role: Data Analyst
 Skills: SQL | Power BI | Data Analysis
 🔗 **LinkedIn:** [Hurumnanya Ikevude](https://www.linkedin.com/in/chihurumnanyaikevude/)
-
-
-
-
-
-
-
-
-### 1️⃣ Which product category had the highest number of entries?
-
-```sql
-SELECT Product_Category, SUM(Sales) as Total_Sales
-FROM KMS_Sql_Case_Study
-GROUP BY Product_Category
-ORDER BY Total_Sales DESC;
-```
-
-### 2️⃣ What are the Top 3 and Bottom 3 regions in terms of sales? 
-
-#### For Top 3 Regions
-
-```sql
-SELECT Region, SUM(Sales) as Top_sales
-FROM KMS_Sql_Case_Study
-GROUP BY Region
-ORDER BY Top_sales DESC
-OFFSET 0 ROWS FETCH NEXT 3 ROWS ONLY;
-```
-
-#### For Bottom 3 Regions
-```sql
-SELECT REGION, SUM(Sales) as Bottom_sales
-FROM KMS_Sql_Case_Study
-GROUP BY Region
-ORDER BY Bottom_sales 
-OFFSET 0 ROWS FETCH NEXT 3 ROWS ONLY;
-```
-
-### 3️⃣ What were the total sales of appliances in Ontario? 
-
-```sql
-SELECT Region, SUM(Sales) as Ontario_total_sales
-FROM KMS_Sql_Case_Study
-WHERE Region = 'Ontario'
-GROUP BY Region;
-```
-
-### 4️⃣ Advise the management of KMS on what to do to increase the revenue from the bottom 10 customers
-
-```sql
-SELECT Customer_Name, SUM(Sales) as Customer_bottom_sales
-FROM KMS_Sql_Case_Study
-GROUP BY Customer_Name
-ORDER BY Customer_bottom_sales ASC
-OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY;
-```
-KMS management should offer first-time bundle deals or limited-time discounts to encourage higher spend.
-
-### 5️⃣ KMS incurred the most shipping cost using which shipping method? 
-
-```sql
-SELECT Ship_Mode, SUM(Shipping_Cost) as High_shipping_cost
-FROM KMS_Sql_Case_Study
-GROUP BY Ship_Mode
-ORDER BY High_shipping_cost DESC;
-```
-
-### 6️⃣ Who are the most valuable customers, and what products or services do they typically purchase? 
-
-#### To find top 3 customers.
-```sql
-SELECT Customer_Name, SUM(Sales) AS Total_Sales
-FROM KMS_Sql_Case_Study
-GROUP BY Customer_Name
-ORDER BY Total_Sales DESC
-OFFSET 0 ROWS FETCH NEXT 3 ROWS ONLY;
-```
-
-#### To find the products or services they typically purchase
-
-```sql
-SELECT Customer_Name, Product_Category, Product_Sub_Category,  SUM(Sales) AS Customer_Total_Spent
-FROM KMS_Sql_Case_Study
-WHERE 
-    Customer_Name IN (
-        SELECT TOP 3 Customer_Name
-        FROM KMS_Sql_Case_Study
-        GROUP BY Customer_Name
-        ORDER BY SUM(Sales) DESC
-    )
-GROUP BY 
-    Customer_Name, Product_Category, Product_Sub_Category
-ORDER BY 
-    Customer_Name, Customer_Total_Spent DESC;
-```
-
-### 7️⃣ Which small business customer had the highest sales? 
-```sql
-SELECT Customer_Name, Customer_Segment, SUM(Sales) as Highest_Small_business
-FROM KMS_Sql_Case_Study
-WHERE Customer_Segment = 'Small Business'
-GROUP BY Customer_Name, Customer_Segment
-ORDER BY Highest_Small_business DESC
-OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY;
-```
-
-### 8️⃣ Which Corporate Customer placed the most number of orders in 2009 – 2012? 
-
-```sql
-SELECT Customer_Name, Customer_Segment, COUNT(Order_Quantity) as Highest_Orderby_corporate
-FROM KMS_Sql_Case_Study
-WHERE Customer_Segment = 'Corporate'
-GROUP BY Customer_Name, Customer_Segment
-ORDER BY Highest_Orderby_corporate DESC
-OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY;
-```
-
-### 9️⃣ Which consumer customer was the most profitable one? Ans => Emily Phan
-
-```sql
-SELECT Customer_Name, Customer_Segment, SUM(Profit) as Most_Profitable_custumer
-FROM KMS_Sql_Case_Study
-WHERE Customer_Segment = 'Consumer'
-GROUP BY Customer_Name, Customer_Segment
-ORDER BY Most_Profitable_custumer DESC
-OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY;
-```
-
-### 🔟 Which customer returned items, and what segment do they belong to? 
-
-```sql
-SELECT k.Customer_Name, k.Customer_Segment, o.Status
-From KMS_Sql_Case_Study k
-JOIN Order_Status o on k.Order_ID = o.Order_ID
-GROUP BY k.Customer_Name, k.Customer_Segment, o.Status;
-```
-
-### 1️⃣1️⃣ If the delivery truck is the most economical but the slowest shipping method and Express Air is the fastest but the most expensive one, do you think the company appropriately spent shipping costs based on the Order Priority? Explain your answer
-
-```sql
-SELECT 
-    Order_Priority,
-    Ship_Mode,
-    COUNT(Order_ID) AS Total_Orders,
-    ROUND(SUM(Sales * Profit),2) AS Total_Shipping_Cost,
-    AVG(datediff(day,[order_date],[ship_date])) AS Avg_Shipping_day
-FROM 
-    KMS_Sql_Case_Study
-GROUP BY 
-    Order_Priority, Ship_Mode
-ORDER BY 
-    Order_Priority, Avg_Shipping_day DESC;
-```
-
-```sql
-SELECT 
-    Order_Priority,
-    Ship_Mode,
-    COUNT(distinct Order_ID) AS Total_Orders,
-    ROUND(SUM(Sales * Profit),2) AS Estimated_Shipping_Cost,
-    AVG(datediff(day,[order_date],[ship_date])) AS Avg_Shipping_day
-FROM 
-    KMS_Sql_Case_Study
-GROUP BY 
-    Order_Priority, Ship_Mode
-ORDER BY 
-    Order_Priority, Ship_Mode DESC;
-```
-
-🧠 **Insight:**  
-No, KMS did **not** appropriately align shipping cost with priority.  
-- Express Air (best for high-priority orders) was underused.  
-- Delivery Truck (slower, cheaper) was overused even for urgent orders.  
-- This mismatch results in **wasted cost and delayed deliveries**.
-
----
-
-## 📈 Summary of Findings
-
-- **Most Sold Category:** Office Supplies  
-- **Top Region by Sales:** West  
-- **Least Performing Region:** Nunavut or Territories  
-- **Most Profitable Segment:** Consumer  
-- **Most Costly Shipping Mode:** Express Air  
-- **Major Insight:** Misalignment between order priority and shipping method caused unnecessary costs.
-
----
-
-## 🧠 Skills Demonstrated
-
-- SQL Server T-SQL Querying  
-- Flat File Data Import & Cleaning  
-- Data Type Conversion & Optimization  
-- Real-world BI Question Solving  
-- Shipping Strategy Evaluation  
-- Customer Value & Profitability Analysis  
-
-
-
-
