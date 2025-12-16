@@ -111,6 +111,10 @@ Financial transactions related to appointments.
 - Assists in resource allocation and clinic scheduling
 - Highlights doctors contributing most to clinic profitability
 
+## 📊 Power BI Dashboard Preview
+
+![Health Clinic Dashboard](https://drive.google.com/uc?export=view&id=1SpNi8HCfns8jn6DM9LyAD2c3VtPsNReF)
+
 ---
 
 ## 🔍 Business Questions & SQL Solutions
@@ -366,4 +370,5 @@ Role: Data Analyst
 Skills: SQL | Power BI | Data Analysis
 
 🔗 **LinkedIn:** [Hurumnanya Ikevude](https://www.linkedin.com/in/chihurumnanyaikevude/)
+
 
